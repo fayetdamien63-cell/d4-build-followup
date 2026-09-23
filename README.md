@@ -1,0 +1,65 @@
+# D4 Build Tracker
+
+Application locale pour suivre sa progression sur un build Diablo IV importé depuis **Maxroll** :
+compétences, parangon et équipement deviennent une checklist visuelle, étape par étape.
+
+## Démarrage
+
+Prérequis : **Node.js 22.13+** (le module SQLite natif `node:sqlite` est utilisé, aucune compilation nécessaire).
+
+```bash
+npm install
+npm run dev        # API sur :5174 + interface sur http://localhost:5173
+```
+
+Pour un usage quotidien (un seul port, sans rechargement à chaud) :
+
+```bash
+npm run build
+npm start          # http://localhost:5174
+```
+
+Colle ensuite l'URL d'un guide (`https://maxroll.gg/d4/build-guides/…`), d'un planner
+(`https://maxroll.gg/d4/planner/xxxx#5`) ou directement un ID de planner.
+
+## Fonctionnalités (phase 1)
+
+- **Import Maxroll** depuis un guide ou un planner. Toutes les variantes sont récupérées (Leveling, Starter, Endgame, Push…),
+  la variante active suit le lien collé.
+- **Prochaines étapes** : l'étape de compétences en cours, les plateaux de parangon à compléter et les objectifs d'équipement
+  par priorité (obtenir l'objet → aspect → affixes → trempe → châsses → masterwork).
+- **Équipement** : une carte par emplacement, couleurs de rareté du jeu, affixes cochables avec badges *Greater Affix* et
+  *Masterwork*, trempes, gemmes/runes.
+- **Compétences** : la barre de compétences et la frise des étapes du guide (seules les nouveautés de chaque étape sont listées).
+- **Parangon** : chaque plateau est dessiné. On clique sur les cases pour les valider, et les glyphes et nœuds rares/légendaires sont listés à part.
+- Valider le rang 15 d'une compétence valide aussi les rangs inférieurs, et inversement pour l'invalidation.
+- **Mettre à jour** re-télécharge le build depuis Maxroll en conservant la progression.
+
+## Architecture
+
+```
+shared/   Modèle normalisé (types) et logique de progression, partagés serveur/front
+server/   Fastify + SQLite (data/tracker.db)
+  src/maxroll/client.ts     Résolution URL → planner, appel de l'endpoint profil
+  src/maxroll/gameData.ts   Données de jeu Maxroll (~12 Mo), en cache disque 7 jours
+  src/maxroll/normalize.ts  JSON Maxroll → modèle lisible (noms, affixes, grilles de parangon)
+  src/maxroll/text.ts       Rendu des gabarits de texte du jeu ([{value}*100|%|], {if:…}, …)
+web/      React + Vite
+```
+
+Sources de données (endpoints publics non documentés, utilisés pour un usage personnel et mis en cache) :
+
+- `https://planners.maxroll.gg/profiles/d4/{id}` : le build
+- `https://assets-ng.maxroll.gg/d4-tools/game/data.min.json` : noms et descriptions du jeu
+
+Chaque élément cochable a une clé stable (`v4:gear:14:affix:2`, `v4:para:Paragon_Warlock_07:131`…). La progression est
+stockée par clé et survit donc aux mises à jour du build.
+
+## Commandes utiles
+
+```bash
+npm test           # tests serveur (vitest)
+npm run typecheck  # TypeScript serveur + front
+```
+
+Les données locales (base SQLite et cache) sont dans `data/`. Le dossier peut être changé avec `D4_DATA_DIR`, le port avec `PORT`.
