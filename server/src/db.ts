@@ -46,6 +46,14 @@ export class Store {
         keys     TEXT NOT NULL
       );
       CREATE INDEX IF NOT EXISTS events_build_at ON events(build_id, at DESC);
+      -- Valeurs réellement obtenues sur les affixes (à l'échelle affichée en jeu).
+      CREATE TABLE IF NOT EXISTS rolls (
+        build_id   INTEGER NOT NULL REFERENCES builds(id) ON DELETE CASCADE,
+        key        TEXT NOT NULL,
+        value      REAL NOT NULL,
+        updated_at TEXT NOT NULL,
+        PRIMARY KEY (build_id, key)
+      );
     `)
   }
 
@@ -116,6 +124,25 @@ export class Store {
       throw err
     }
     return changed
+  }
+
+  getRolls(buildId: number): Record<string, number> {
+    const rows = this.db.prepare('SELECT key, value FROM rolls WHERE build_id = ?').all(buildId) as { key: string; value: number }[]
+    return Object.fromEntries(rows.map((r) => [r.key, r.value]))
+  }
+
+  /** Enregistre (ou efface avec `null`) la valeur obtenue sur un affixe. */
+  setRoll(buildId: number, key: string, value: number | null): void {
+    if (value === null) {
+      this.db.prepare('DELETE FROM rolls WHERE build_id = ? AND key = ?').run(buildId, key)
+      return
+    }
+    this.db
+      .prepare(
+        `INSERT INTO rolls (build_id, key, value, updated_at) VALUES (?, ?, ?, ?)
+         ON CONFLICT (build_id, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at`,
+      )
+      .run(buildId, key, value, new Date().toISOString())
   }
 
   getHistory(buildId: number, limit = 300): HistoryEvent[] {

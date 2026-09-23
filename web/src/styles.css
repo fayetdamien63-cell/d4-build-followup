@@ -1158,11 +1158,6 @@ button {
   color: var(--muted);
   font-size: 12px;
 }
-.aspect-line {
-  background: rgba(240, 138, 36, 0.06);
-  border: 1px solid rgba(240, 138, 36, 0.18);
-  margin: 0;
-}
 .affix-group {
   display: grid;
 }
@@ -1954,6 +1949,201 @@ button {
   font-size: 11px;
   color: var(--gold);
   margin-top: 2px;
+}
+
+/* ---------- Valeurs obtenues ---------- */
+
+.affix-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+.affix-row > .check {
+  flex: 1;
+  min-width: 0;
+}
+.affix-row.aspect-line {
+  padding-right: 8px;
+  border-radius: var(--radius-sm);
+  background: rgba(240, 138, 36, 0.06);
+  border: 1px solid rgba(240, 138, 36, 0.18);
+}
+.affix-row.aspect-line > .check {
+  margin: 0;
+}
+.affix-row > .roll-add,
+.affix-row > .roll-pill,
+.affix-row > .roll-edit {
+  flex: none;
+  margin-top: 5px;
+}
+.roll-add {
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px dashed var(--border-strong);
+  background: none;
+  color: var(--faint);
+  font-size: 11px;
+  font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.12s, color 0.12s, border-color 0.12s;
+}
+.affix-row:hover .roll-add,
+.roll-add:focus-visible {
+  opacity: 1;
+}
+.roll-add:hover {
+  color: var(--gold);
+  border-color: var(--gold);
+}
+.roll-add-static {
+  display: inline-block;
+  opacity: 1;
+  cursor: default;
+}
+/* Écrans tactiles : pas de survol, le bouton reste visible. */
+@media (hover: none) {
+  .roll-add {
+    opacity: 1;
+  }
+}
+.roll-pill {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid;
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.roll-ratio {
+  font-size: 10px;
+  opacity: 0.85;
+}
+.roll-ok { color: var(--good); border-color: rgba(127, 191, 106, 0.4); }
+.roll-close { color: var(--gold); border-color: rgba(227, 183, 105, 0.4); }
+.roll-low { color: var(--bad); border-color: rgba(217, 112, 95, 0.45); }
+.roll-none { color: var(--muted); border-color: var(--border-strong); }
+.roll-edit {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.roll-input {
+  width: 76px;
+  height: 24px;
+  padding: 0 6px;
+  border-radius: 4px;
+  border: 1px solid var(--gold);
+  background: var(--bg);
+  color: var(--text);
+  font: 600 12px var(--font);
+  font-variant-numeric: tabular-nums;
+}
+.roll-input:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--gold-soft);
+}
+.roll-input.is-invalid {
+  border-color: var(--bad);
+}
+.roll-target {
+  font-size: 11px;
+  color: var(--faint);
+}
+.gear-slot-right {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.quality {
+  padding: 1px 8px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0;
+  text-transform: none;
+  white-space: nowrap;
+}
+.quality-ok { color: var(--good); background: rgba(127, 191, 106, 0.12); }
+.quality-close { color: var(--gold); background: var(--gold-soft); }
+.quality-low { color: var(--bad); background: rgba(217, 112, 95, 0.12); }
+
+.roll-hint {
+  margin: 0 0 16px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px dashed var(--border);
+  color: var(--muted);
+  font-size: 13px;
+}
+.priorities {
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--surface-2), var(--surface));
+}
+.priorities-head {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+.priorities-head h2 {
+  font-size: 17px;
+}
+.priority-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.priority-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+.priority-list .quality {
+  flex: none;
+  margin-top: 2px;
+}
+.priority-body {
+  display: grid;
+  min-width: 0;
+}
+.priority-slot {
+  font-size: 12px;
+  color: var(--muted);
+}
+.priority-item {
+  font-weight: 600;
+  color: var(--r-legendary);
+}
+.rarity-unique .priority-item { color: var(--r-unique); }
+.rarity-mythic .priority-item { color: var(--r-mythic); }
+.priority-affix {
+  display: flex;
+  min-width: 0;
+  white-space: nowrap;
+}
+.priority-affix strong {
+  color: var(--bad);
+  margin-right: 4px;
+}
+.priority-affix-text {
+  margin-left: 6px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--muted);
 }
 
 /* ---------- Responsive ---------- */

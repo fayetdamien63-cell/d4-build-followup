@@ -81,11 +81,16 @@ export function resolveConditionals(input: string, isTrue: (cond: string) => boo
   return out
 }
 
-export function renderTemplate(template: string, vars: TemplateVars = {}): string {
+/**
+ * @param collect reçoit, dans l'ordre, les valeurs numériques calculées (à l'échelle affichée) :
+ *   la première est la valeur "roulée" de l'affixe, par opposition aux nombres fixes du texte.
+ */
+export function renderTemplate(template: string, vars: TemplateVars = {}, collect?: number[]): string {
   let out = resolveConditionals(template.replace(/\r?\n/g, ' '))
   // Valeurs : [expr|format|]
   out = out.replace(/\[([^\[\]|]*)\|([^|\]]*)\|\]/g, (_, expr: string, fmt: string) => {
     const v = evalExpr(expr, vars)
+    if (typeof v === 'number') collect?.push(Math.round(v * 100) / 100)
     return v === null ? '#' : applyFormat(v, fmt)
   })
   // Variables hors crochets : "{value1} Resistance"
