@@ -43,7 +43,7 @@ export function buildApp(deps: AppDeps) {
 
   const withProgress = (id: number): BuildWithProgress | null => {
     const found = store.getBuild(id)
-    return found ? { ...found, progress: store.getProgress(id) } : null
+    return found ? { ...found, progress: store.getProgress(id), rolls: store.getRolls(id) } : null
   }
   const notFound = (reply: FastifyReply) => reply.code(404).send({ error: 'Build introuvable' })
   const parseId = (raw: string) => Number.parseInt(raw, 10)
@@ -168,6 +168,20 @@ export function buildApp(deps: AppDeps) {
     }
     store.setProgress(id, keys, done)
     return { progress: store.getProgress(id) }
+  })
+
+  /** Valeur obtenue sur un affixe ; la renseigner valide aussi l'affixe (et l'inscrit au journal). */
+  app.put<{ Params: { id: string }; Body: { key?: string; value?: number | null } }>('/api/builds/:id/rolls', async (req, reply) => {
+    const id = parseId(req.params.id)
+    if (!store.getBuild(id)) return notFound(reply)
+    const { key, value } = req.body ?? {}
+    const validValue = value === null || (typeof value === 'number' && Number.isFinite(value) && value >= 0)
+    if (typeof key !== 'string' || !key || !validValue) {
+      return reply.code(400).send({ error: 'Format attendu : { key: string, value: number >= 0 | null }' })
+    }
+    store.setRoll(id, key, value ?? null)
+    if (value !== null && value !== undefined) store.setProgress(id, [key], true)
+    return { rolls: store.getRolls(id), progress: store.getProgress(id) }
   })
 
   app.delete<{ Params: { id: string } }>('/api/builds/:id', async (req, reply) => {

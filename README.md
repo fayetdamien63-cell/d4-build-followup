@@ -58,6 +58,17 @@ Colle ensuite l'URL d'un guide (`https://maxroll.gg/d4/build-guides/…`), d'un 
   Le cache hors ligne (service worker) n'est disponible que sur `localhost` ou en HTTPS : via l'adresse IP locale, le téléphone
   a besoin du PC allumé.
 
+## Valeurs obtenues
+
+Dans l'onglet **Équipement**, « + valeur » à côté d'un affixe (aspect, affixe, trempe) permet de saisir la valeur obtenue en jeu,
+au format du jeu ou français (`1,900`, `1 900`, `9,75`, `15%`…). L'app la compare à la cible du guide :
+
+- une pastille verte (cible atteinte), dorée (≥ 90 %) ou rouge, avec le pourcentage ;
+- une **note de qualité** par objet (moyenne des affixes renseignés) ;
+- un panneau **« À améliorer en priorité »** qui classe les objets du plus faible au plus fort et montre leur pire affixe.
+
+Saisir une valeur coche aussi l'affixe (et l'inscrit au journal).
+
 ## Liste de farm
 
 L'onglet **Farm** indique où trouver chaque unique, mythique et rune du build encore manquant. Pour chaque source, il donne le boss,

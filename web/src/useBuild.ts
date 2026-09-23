@@ -10,6 +10,8 @@ export interface BuildState {
   /** Coche/décoche (mise à jour optimiste, annulée si le serveur refuse). */
   setDone: (keys: string[], done: boolean) => void
   setVariant: (index: number) => void
+  /** Valeur obtenue sur un affixe (null pour l'effacer) ; une valeur valide aussi l'affixe. */
+  setRoll: (key: string, value: number | null) => void
   refresh: () => Promise<void>
 }
 
@@ -51,6 +53,26 @@ export function useBuild(id: number, onError: (message: string) => void): BuildS
     [id, allKeys, onError],
   )
 
+  const setRoll = useCallback(
+    (key: string, value: number | null) => {
+      const current = dataRef.current
+      if (!current) return
+      const rolls = { ...(current.rolls ?? {}) }
+      if (value === null) delete rolls[key]
+      else rolls[key] = value
+      const progress = value === null || current.progress[key] ? current.progress : { ...current.progress, [key]: new Date().toISOString() }
+      setData({ ...current, rolls, progress })
+      api.setRoll(id, key, value).then(
+        (res) => setData((d) => (d ? { ...d, rolls: res.rolls, progress: res.progress } : d)),
+        (err: Error) => {
+          setData((d) => (d ? { ...d, rolls: current.rolls, progress: current.progress } : d))
+          onError(`Sauvegarde impossible : ${err.message}`)
+        },
+      )
+    },
+    [id, onError],
+  )
+
   const setVariant = useCallback(
     (index: number) => {
       setData((d) => (d ? { ...d, activeVariant: index } : d))
@@ -66,5 +88,5 @@ export function useBuild(id: number, onError: (message: string) => void): BuildS
 
   const isDone = useCallback((key: string) => Boolean(data?.progress[key]), [data?.progress])
 
-  return { data, error, isDone, setDone, setVariant, refresh }
+  return { data, error, isDone, setDone, setVariant, setRoll, refresh }
 }

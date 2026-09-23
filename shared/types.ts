@@ -118,6 +118,8 @@ export interface Affix {
   greater: boolean
   /** Affixe ciblé par les crits de masterwork. */
   masterwork: boolean
+  /** Valeur visée par le guide, à l'échelle affichée en jeu (ex : 15 pour "+15%"). Absente sur les anciens imports. */
+  target?: number | null
 }
 
 export interface Socket {
@@ -146,6 +148,8 @@ export interface BuildWithProgress {
   activeVariant: number
   /** key -> date ISO de complétion */
   progress: Record<string, string>
+  /** key d'affixe -> valeur obtenue en jeu */
+  rolls: Record<string, number>
 }
 
 export interface HistoryEvent {

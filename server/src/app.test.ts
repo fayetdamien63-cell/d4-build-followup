@@ -89,6 +89,20 @@ describe('API', () => {
     expect((await app.inject({ url: `/api/builds/${id}/farm?variant=7` })).statusCode).toBe(400)
   })
 
+  it('enregistre une valeur obtenue et valide l’affixe', async () => {
+    const put = (payload: object) => app.inject({ method: 'PUT', url: `/api/builds/${id}/rolls`, payload })
+    const res = (await put({ key: 'v1:gear:4:affix:1', value: 1900 })).json()
+    expect(res.rolls).toEqual({ 'v1:gear:4:affix:1': 1900 })
+    expect(res.progress).toHaveProperty('v1:gear:4:affix:1')
+    expect((await put({ key: 'v1:gear:4:affix:1', value: 2100 })).json().rolls['v1:gear:4:affix:1']).toBe(2100)
+    // Effacer la valeur ne décoche pas l'affixe.
+    const cleared = (await put({ key: 'v1:gear:4:affix:1', value: null })).json()
+    expect(cleared.rolls).toEqual({})
+    expect(cleared.progress).toHaveProperty('v1:gear:4:affix:1')
+    expect((await put({ key: 'v1:gear:4:affix:1', value: -3 })).statusCode).toBe(400)
+    expect((await app.inject({ url: `/api/builds/${id}` })).json()).toHaveProperty('rolls', {})
+  })
+
   it('change de variante active et valide l’indice', async () => {
     expect((await app.inject({ method: 'PATCH', url: `/api/builds/${id}`, payload: { activeVariant: 0 } })).statusCode).toBe(200)
     expect((await app.inject({ method: 'PATCH', url: `/api/builds/${id}`, payload: { activeVariant: 9 } })).statusCode).toBe(400)

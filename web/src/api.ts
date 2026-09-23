@@ -24,6 +24,11 @@ export const api = {
   checkUpdates: (id: number, force = false) => request<UpdateCheck>(`/api/builds/${id}/updates${force ? '?force=1' : ''}`),
   lan: () => request<LanInfo>('/api/lan'),
   farm: (id: number, variant: number) => request<FarmPlan>(`/api/builds/${id}/farm?variant=${variant}`),
+  setRoll: (id: number, key: string, value: number | null) =>
+    request<{ rolls: Record<string, number>; progress: Record<string, string> }>(`/api/builds/${id}/rolls`, {
+      method: 'PUT',
+      body: JSON.stringify({ key, value }),
+    }),
   setProgress: (id: number, keys: string[], done: boolean) =>
     request<{ progress: Record<string, string> }>(`/api/builds/${id}/progress`, {
       method: 'PUT',

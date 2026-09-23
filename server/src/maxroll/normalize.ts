@@ -264,12 +264,14 @@ export class Normalizer {
   }
 
   affix(key: string, raw: RawAffixValue, isAspect = false): Affix {
+    const collected: number[] = []
     return {
       key,
       id: String(raw.nid),
-      text: this.affixText(raw.nid, raw.values ?? [], isAspect),
+      text: this.affixText(raw.nid, raw.values ?? [], isAspect, collected),
       greater: Boolean(raw.greater),
       masterwork: raw.upgrade === 1,
+      target: collected[0] ?? null,
     }
   }
 
@@ -277,7 +279,7 @@ export class Normalizer {
    * Pour les aspects, Maxroll stocke le rang légendaire (et non la valeur) : on réévalue
    * la formule de l'attribut, ex. "80+(CurrentLegendaryRank()-1)*2".
    */
-  affixText(nid: number, values: number[], isAspect = false): string {
+  affixText(nid: number, values: number[], isAspect = false, collect?: number[]): string {
     const entry = this.game.affixById.get(nid)
     if (!entry) return `Affixe inconnu (${nid})`
     const { key, affix } = entry
@@ -297,7 +299,7 @@ export class Normalizer {
         if (typeof v === 'number') vars[`Affix_Value_${i + 1}`] = v
       })
     }
-    if (affix.desc) return renderTemplate(affix.desc, vars)
+    if (affix.desc) return renderTemplate(affix.desc, vars, collect)
 
     const parts = (affix.attributes ?? []).map((attr, i) => {
       const attrName = this.game.attributes[String(attr.id)]?.name
@@ -306,7 +308,7 @@ export class Normalizer {
       const template = this.game.attributeDescriptions[attrName]
       if (!template) return null
       const value = values[i] ?? values[0] ?? (typeof attr.value === 'number' ? attr.value : undefined)
-      return renderTemplate(template, { value, value1: paramName ?? '', value2: value })
+      return renderTemplate(template, { value, value1: paramName ?? '', value2: value }, collect)
     })
     const text = parts.filter(Boolean).join(', ')
     return text || prettifyId(key)
