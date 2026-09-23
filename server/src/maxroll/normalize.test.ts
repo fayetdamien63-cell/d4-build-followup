@@ -74,6 +74,47 @@ describe('helpers', () => {
   })
 })
 
+describe('version primordiale (Ancestral)', () => {
+  it('concerne armes, armures et bijoux, pas les charmes', () => {
+    const keys = variantKeys(build, endgame)
+    expect(keys).toContain('v1:gear:4:ancestral')
+    expect(keys).toContain('v1:gear:14:ancestral')
+    expect(keys.some((k) => k.startsWith('v1:gear:21') && k.endsWith(':ancestral'))).toBe(false)
+  })
+
+  it('implique l’objet, et retirer l’objet retire le primordial', async () => {
+    const { withImpliedKeys } = await import('../../../shared/progress.ts')
+    const all = variantKeys(build, endgame)
+    expect(withImpliedKeys(all, ['v1:gear:4:ancestral'], true).sort()).toEqual(['v1:gear:4', 'v1:gear:4:ancestral'])
+    expect(withImpliedKeys(all, ['v1:gear:4'], false).sort()).toEqual(['v1:gear:4', 'v1:gear:4:ancestral'])
+    // Retirer le primordial ne retire pas l'objet.
+    expect(withImpliedKeys(all, ['v1:gear:4:ancestral'], false)).toEqual(['v1:gear:4:ancestral'])
+  })
+})
+
+describe('version mythique', () => {
+  // Variante fictive : le casque est visé en mythique.
+  const mythicBuild = { ...build, variants: build.variants.map((v) => ({ ...v, gear: v.gear.map((g) => (g.slot === '4' ? { ...g, rarity: 'mythic' as const } : g)) })) }
+  const mythicEndgame = mythicBuild.variants[1]
+
+  it('ne concerne que les objets visés en mythique', () => {
+    const keys = variantKeys(mythicBuild, mythicEndgame)
+    expect(keys).toContain('v1:gear:4:mythic')
+    expect(keys).not.toContain('v1:gear:14:mythic')
+  })
+
+  it('forme une chaîne objet → primordial → mythique', async () => {
+    const { withImpliedKeys } = await import('../../../shared/progress.ts')
+    const all = variantKeys(mythicBuild, mythicEndgame)
+    const sorted = (keys: string[]) => [...keys].sort()
+    expect(sorted(withImpliedKeys(all, ['v1:gear:4:mythic'], true))).toEqual(['v1:gear:4', 'v1:gear:4:ancestral', 'v1:gear:4:mythic'])
+    expect(sorted(withImpliedKeys(all, ['v1:gear:4:ancestral'], false))).toEqual(['v1:gear:4:ancestral', 'v1:gear:4:mythic'])
+    expect(sorted(withImpliedKeys(all, ['v1:gear:4'], false))).toEqual(['v1:gear:4', 'v1:gear:4:ancestral', 'v1:gear:4:mythic'])
+    // Sans palier mythique (jambières), rien n'est inventé.
+    expect(sorted(withImpliedKeys(all, ['v1:gear:14'], false))).toEqual(['v1:gear:14', 'v1:gear:14:ancestral'])
+  })
+})
+
 describe('withImpliedKeys', () => {
   it('propage les rangs vers le bas en validant, vers le haut en invalidant', async () => {
     const { withImpliedKeys } = await import('../../../shared/progress.ts')

@@ -1,4 +1,4 @@
-import { boardKeys, countDone, gearKeys, masterworkKey } from '../../shared/progress.ts'
+import { ancestralKey, boardKeys, countDone, gearKeys, masterworkKey, mythicKey } from '../../shared/progress.ts'
 import type { Build, GearSlot, Variant } from '../../shared/types.ts'
 
 export interface Stat {
@@ -34,17 +34,21 @@ export interface GearTodo {
   detail?: string
 }
 
-const TIERS = ['Obtenir', 'Aspect', 'Affixe', 'Trempe', 'Châsse', 'Masterwork'] as const
+const TIERS = ['Obtenir', 'Aspect', 'Primordial', 'Mythique', 'Affixe', 'Trempe', 'Châsse', 'Masterwork'] as const
 
 export function gearTodos(v: Variant, isDone: (k: string) => boolean): GearTodo[] {
   const todos: GearTodo[] = []
   for (const slot of v.gear) {
     if (!isDone(slot.key)) todos.push({ key: slot.key, slot, tier: 0, label: slot.name, detail: slot.baseType ?? undefined })
     if (slot.aspect && !isDone(slot.aspect.key)) todos.push({ key: slot.aspect.key, slot, tier: 1, label: slot.aspect.text })
-    for (const a of slot.affixes) if (!isDone(a.key)) todos.push({ key: a.key, slot, tier: 2, label: a.text, detail: a.greater ? 'Greater' : undefined })
-    for (const a of slot.tempered) if (!isDone(a.key)) todos.push({ key: a.key, slot, tier: 3, label: a.text })
-    for (const s of slot.sockets) if (!isDone(s.key)) todos.push({ key: s.key, slot, tier: 4, label: s.name })
-    if (!isDone(masterworkKey(slot))) todos.push({ key: masterworkKey(slot), slot, tier: 5, label: 'Masterwork terminé' })
+    const ancestral = ancestralKey(slot)
+    if (ancestral && !isDone(ancestral)) todos.push({ key: ancestral, slot, tier: 2, label: `${slot.name} primordial` })
+    const mythic = mythicKey(slot)
+    if (mythic && !isDone(mythic)) todos.push({ key: mythic, slot, tier: 3, label: `${slot.name} mythique (Cube)` })
+    for (const a of slot.affixes) if (!isDone(a.key)) todos.push({ key: a.key, slot, tier: 4, label: a.text, detail: a.greater ? 'Greater' : undefined })
+    for (const a of slot.tempered) if (!isDone(a.key)) todos.push({ key: a.key, slot, tier: 5, label: a.text })
+    for (const s of slot.sockets) if (!isDone(s.key)) todos.push({ key: s.key, slot, tier: 6, label: s.name })
+    if (!isDone(masterworkKey(slot))) todos.push({ key: masterworkKey(slot), slot, tier: 7, label: 'Masterwork terminé' })
   }
   return todos.sort((a, b) => a.tier - b.tier)
 }

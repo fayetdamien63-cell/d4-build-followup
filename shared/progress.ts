@@ -1,8 +1,31 @@
 import type { Build, GearSlot, ParagonBoardStep, ParagonCell, Variant } from './types.ts'
 
+export const ANCESTRAL_SUFFIX = ':ancestral'
+
+/**
+ * Clé "version primordiale" (Ancestral en anglais) d'un emplacement, ou null si sans objet : le sceau et
+ * les charmes (emplacements 20+) n'ont pas cette qualité. Les mythiques sont concernés : en saison 15,
+ * on les obtient en améliorant au Cube un unique primordial.
+ */
+export function ancestralKey(slot: GearSlot): string | null {
+  if (Number(slot.slot) >= 20) return null
+  return `${slot.key}${ANCESTRAL_SUFFIX}`
+}
+
+export const MYTHIC_SUFFIX = ':mythic'
+
+/** Clé "version mythique" (amélioration au Cube d'un unique primordial), pour les objets que le guide vise en mythique. */
+export function mythicKey(slot: GearSlot): string | null {
+  return slot.rarity === 'mythic' && ancestralKey(slot) ? `${slot.key}${MYTHIC_SUFFIX}` : null
+}
+
 export function gearKeys(slot: GearSlot): string[] {
+  const ancestral = ancestralKey(slot)
+  const mythic = mythicKey(slot)
   return [
     slot.key,
+    ...(ancestral ? [ancestral] : []),
+    ...(mythic ? [mythic] : []),
     ...(slot.aspect ? [slot.aspect.key] : []),
     ...slot.affixes.map((a) => a.key),
     ...slot.tempered.map((a) => a.key),
@@ -41,12 +64,24 @@ export function countDone(keys: string[], progress: Record<string, string>): num
 }
 
 /**
- * Les clés suffixées par un niveau (`…@5` : rang de compétence, niveau de glyphe) s'impliquent entre elles :
+ * Implications entre clés :
+ * - objet obtenu → version primordiale → version mythique (voir ancestralKey, mythicKey) ;
+ * - les clés suffixées par un niveau (`…@5` : rang de compétence, niveau de glyphe) s'impliquent entre elles :
  * valider le rang 5 valide aussi les rangs inférieurs ; invalider le rang 1 invalide les rangs supérieurs.
  */
 export function withImpliedKeys(allKeys: string[], keys: string[], done: boolean): string[] {
   const result = new Set(keys)
   for (const key of keys) {
+    // Chaîne objet → primordial → mythique : valider un palier valide les précédents,
+    // retirer un palier retire les suivants.
+    const item = key.replace(new RegExp(`(${ANCESTRAL_SUFFIX}|${MYTHIC_SUFFIX})$`), '')
+    const chain = [item, item + ANCESTRAL_SUFFIX, item + MYTHIC_SUFFIX]
+    const tier = chain.indexOf(key)
+    if (tier > 0 || (tier === 0 && allKeys.includes(chain[1]))) {
+      const implied = done ? chain.slice(0, tier) : chain.slice(tier + 1)
+      for (const k of implied) if (k === item || allKeys.includes(k)) result.add(k)
+    }
+
     const m = key.match(/^(.*)@(\d+)$/)
     if (!m) continue
     const [, base, level] = m
