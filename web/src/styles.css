@@ -394,10 +394,14 @@ button {
   background: rgba(224, 80, 63, 0.12);
 }
 .tag-tier-3 {
+  color: var(--r-mythic);
+  background: rgba(185, 140, 255, 0.12);
+}
+.tag-tier-4 {
   color: var(--r-magic);
   background: rgba(111, 147, 255, 0.12);
 }
-.tag-tier-4 {
+.tag-tier-5 {
   color: #7fd3e8;
   background: rgba(127, 211, 232, 0.1);
 }
@@ -1204,8 +1208,24 @@ button {
   color: var(--gold);
 }
 .socket-gem { border-color: rgba(111, 147, 255, 0.35); }
+.gear-tiers {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+.chip-mythic {
+  border-color: rgba(185, 140, 255, 0.4);
+  color: var(--muted);
+}
+.chip-mythic.is-checked {
+  border-color: var(--r-mythic);
+  color: var(--r-mythic);
+}
+.chip-mythic.is-checked .check-box {
+  background: var(--r-mythic);
+  border-color: var(--r-mythic);
+}
 .chip-ancestral {
-  justify-self: start;
   border-color: rgba(224, 80, 63, 0.4);
   color: var(--muted);
 }

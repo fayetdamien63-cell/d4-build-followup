@@ -65,6 +65,9 @@ puissance maximale et Greater Affixes possibles. La cocher valide aussi l'objet,
 version primordiale. L'étape apparaît dans les priorités (après l'aspect) et au journal. Elle concerne aussi les uniques visés
 en mythique, puisqu'en saison 15 on les obtient en améliorant au Cube un unique primordial. Le sceau et les charmes n'ont pas cette qualité.
 
+Les objets visés en mythique ont en plus une case **« Mythique »** (amélioration au Cube horadrique). Les trois paliers
+s'enchaînent : valider « Mythique » valide aussi « Primordial » et « Obtenu », et retirer un palier retire les suivants.
+
 ## Valeurs obtenues
 
 Dans l'onglet **Équipement**, « + valeur » à côté d'un affixe (aspect, affixe, trempe) permet de saisir la valeur obtenue en jeu,

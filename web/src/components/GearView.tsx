@@ -1,4 +1,4 @@
-import { ancestralKey, gearKeys, masterworkKey } from '../../../shared/progress.ts'
+import { ancestralKey, gearKeys, masterworkKey, mythicKey } from '../../../shared/progress.ts'
 import { slotQuality } from '../../../shared/rolls.ts'
 import type { Affix, GearSlot, Variant } from '../../../shared/types.ts'
 import { stat } from '../stats.ts'
@@ -98,6 +98,7 @@ export function GearCard({ slot, state }: { slot: GearSlot; state: BuildState })
   const obtainedAt = data?.progress[slot.key]
   const quality = slotQuality(slot, data?.rolls ?? {})
   const ancestral = ancestralKey(slot)
+  const mythic = mythicKey(slot)
 
   return (
     <article className={`gear-card rarity-${slot.rarity} ${obtained ? 'is-obtained' : ''} ${complete ? 'is-complete' : ''}`}>
@@ -118,14 +119,26 @@ export function GearCard({ slot, state }: { slot: GearSlot; state: BuildState })
           {obtainedAt && <span className="gear-date">Obtenu {formatDate(obtainedAt)}</span>}
         </Check>
         {ancestral && (
-          <Check
-            checked={isDone(ancestral)}
-            onChange={(v) => setDone([ancestral], v)}
-            className="chip-check chip-ancestral"
-            title="Version primordiale (Ancestral en anglais) : puissance maximale et Greater Affixes possibles"
-          >
-            Primordial
-          </Check>
+          <div className="gear-tiers">
+            <Check
+              checked={isDone(ancestral)}
+              onChange={(v) => setDone([ancestral], v)}
+              className="chip-check chip-ancestral"
+              title="Version primordiale (Ancestral en anglais) : puissance maximale et Greater Affixes possibles"
+            >
+              Primordial
+            </Check>
+            {mythic && (
+              <Check
+                checked={isDone(mythic)}
+                onChange={(v) => setDone([mythic], v)}
+                className="chip-check chip-mythic"
+                title="Version mythique : unique primordial amélioré au Cube horadrique (pouvoir unique renforcé)"
+              >
+                Mythique
+              </Check>
+            )}
+          </div>
         )}
         <ProgressBar stat={s} size="sm" />
       </header>
