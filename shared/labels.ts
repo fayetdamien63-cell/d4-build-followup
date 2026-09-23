@@ -1,5 +1,5 @@
 import type { Build, Variant } from './types.ts'
-import { masterworkKey } from './progress.ts'
+import { ancestralKey, masterworkKey } from './progress.ts'
 
 export type Category = 'skills' | 'paragon' | 'gear'
 
@@ -50,6 +50,8 @@ export function describeVariant(build: Pick<Build, 'paragonGrids'>, variant: Var
     const context = slot.slotLabel
     const gear = (label: string, key: string, milestone = false) => map.set(key, { label, context, category: 'gear', variant: v, milestone })
     gear(slot.name, slot.key, slot.rarity === 'unique' || slot.rarity === 'mythic')
+    const ancestral = ancestralKey(slot)
+    if (ancestral) gear(`${slot.name} primordial`, ancestral, slot.rarity === 'unique' || slot.rarity === 'mythic')
     if (slot.aspect) gear(slot.aspect.text, slot.aspect.key)
     for (const a of slot.affixes) gear(a.greater ? `${a.text} (GA)` : a.text, a.key)
     for (const a of slot.tempered) gear(`Trempe : ${a.text}`, a.key)

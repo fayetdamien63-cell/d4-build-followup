@@ -1,8 +1,22 @@
 import type { Build, GearSlot, ParagonBoardStep, ParagonCell, Variant } from './types.ts'
 
+export const ANCESTRAL_SUFFIX = ':ancestral'
+
+/**
+ * Clé "version primordiale" (Ancestral en anglais) d'un emplacement, ou null si sans objet : le sceau et
+ * les charmes (emplacements 20+) n'ont pas cette qualité. Les mythiques sont concernés : en saison 15,
+ * on les obtient en améliorant au Cube un unique primordial.
+ */
+export function ancestralKey(slot: GearSlot): string | null {
+  if (Number(slot.slot) >= 20) return null
+  return `${slot.key}${ANCESTRAL_SUFFIX}`
+}
+
 export function gearKeys(slot: GearSlot): string[] {
+  const ancestral = ancestralKey(slot)
   return [
     slot.key,
+    ...(ancestral ? [ancestral] : []),
     ...(slot.aspect ? [slot.aspect.key] : []),
     ...slot.affixes.map((a) => a.key),
     ...slot.tempered.map((a) => a.key),
@@ -41,12 +55,18 @@ export function countDone(keys: string[], progress: Record<string, string>): num
 }
 
 /**
- * Les clés suffixées par un niveau (`…@5` : rang de compétence, niveau de glyphe) s'impliquent entre elles :
+ * Implications entre clés :
+ * - version primordiale ↔ objet obtenu (voir ancestralKey) ;
+ * - les clés suffixées par un niveau (`…@5` : rang de compétence, niveau de glyphe) s'impliquent entre elles :
  * valider le rang 5 valide aussi les rangs inférieurs ; invalider le rang 1 invalide les rangs supérieurs.
  */
 export function withImpliedKeys(allKeys: string[], keys: string[], done: boolean): string[] {
   const result = new Set(keys)
   for (const key of keys) {
+    // La version primordiale implique l'objet ; retirer l'objet retire sa version primordiale.
+    if (done && key.endsWith(ANCESTRAL_SUFFIX)) result.add(key.slice(0, -ANCESTRAL_SUFFIX.length))
+    if (!done && allKeys.includes(key + ANCESTRAL_SUFFIX)) result.add(key + ANCESTRAL_SUFFIX)
+
     const m = key.match(/^(.*)@(\d+)$/)
     if (!m) continue
     const [, base, level] = m

@@ -58,6 +58,13 @@ Colle ensuite l'URL d'un guide (`https://maxroll.gg/d4/build-guides/…`), d'un 
   Le cache hors ligne (service worker) n'est disponible que sur `localhost` ou en HTTPS : via l'adresse IP locale, le téléphone
   a besoin du PC allumé.
 
+## Version primordiale
+
+Chaque arme, armure et bijou a une case **« Primordial »** (*Ancestral* dans le client anglais et chez Maxroll) :
+puissance maximale et Greater Affixes possibles. La cocher valide aussi l'objet, et décocher l'objet retire la
+version primordiale. L'étape apparaît dans les priorités (après l'aspect) et au journal. Elle concerne aussi les uniques visés
+en mythique, puisqu'en saison 15 on les obtient en améliorant au Cube un unique primordial. Le sceau et les charmes n'ont pas cette qualité.
+
 ## Valeurs obtenues
 
 Dans l'onglet **Équipement**, « + valeur » à côté d'un affixe (aspect, affixe, trempe) permet de saisir la valeur obtenue en jeu,

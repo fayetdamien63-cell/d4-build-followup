@@ -1,4 +1,4 @@
-import { gearKeys, masterworkKey } from '../../../shared/progress.ts'
+import { ancestralKey, gearKeys, masterworkKey } from '../../../shared/progress.ts'
 import { slotQuality } from '../../../shared/rolls.ts'
 import type { Affix, GearSlot, Variant } from '../../../shared/types.ts'
 import { stat } from '../stats.ts'
@@ -97,6 +97,7 @@ export function GearCard({ slot, state }: { slot: GearSlot; state: BuildState })
   const obtained = isDone(slot.key)
   const obtainedAt = data?.progress[slot.key]
   const quality = slotQuality(slot, data?.rolls ?? {})
+  const ancestral = ancestralKey(slot)
 
   return (
     <article className={`gear-card rarity-${slot.rarity} ${obtained ? 'is-obtained' : ''} ${complete ? 'is-complete' : ''}`}>
@@ -116,6 +117,16 @@ export function GearCard({ slot, state }: { slot: GearSlot; state: BuildState })
           </span>
           {obtainedAt && <span className="gear-date">Obtenu {formatDate(obtainedAt)}</span>}
         </Check>
+        {ancestral && (
+          <Check
+            checked={isDone(ancestral)}
+            onChange={(v) => setDone([ancestral], v)}
+            className="chip-check chip-ancestral"
+            title="Version primordiale (Ancestral en anglais) : puissance maximale et Greater Affixes possibles"
+          >
+            Primordial
+          </Check>
+        )}
         <ProgressBar stat={s} size="sm" />
       </header>
 

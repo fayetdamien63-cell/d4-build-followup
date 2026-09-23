@@ -74,6 +74,24 @@ describe('helpers', () => {
   })
 })
 
+describe('version primordiale (Ancestral)', () => {
+  it('concerne armes, armures et bijoux, pas les charmes', () => {
+    const keys = variantKeys(build, endgame)
+    expect(keys).toContain('v1:gear:4:ancestral')
+    expect(keys).toContain('v1:gear:14:ancestral')
+    expect(keys.some((k) => k.startsWith('v1:gear:21') && k.endsWith(':ancestral'))).toBe(false)
+  })
+
+  it('implique l’objet, et retirer l’objet retire le primordial', async () => {
+    const { withImpliedKeys } = await import('../../../shared/progress.ts')
+    const all = variantKeys(build, endgame)
+    expect(withImpliedKeys(all, ['v1:gear:4:ancestral'], true).sort()).toEqual(['v1:gear:4', 'v1:gear:4:ancestral'])
+    expect(withImpliedKeys(all, ['v1:gear:4'], false).sort()).toEqual(['v1:gear:4', 'v1:gear:4:ancestral'])
+    // Retirer le primordial ne retire pas l'objet.
+    expect(withImpliedKeys(all, ['v1:gear:4:ancestral'], false)).toEqual(['v1:gear:4:ancestral'])
+  })
+})
+
 describe('withImpliedKeys', () => {
   it('propage les rangs vers le bas en validant, vers le haut en invalidant', async () => {
     const { withImpliedKeys } = await import('../../../shared/progress.ts')
