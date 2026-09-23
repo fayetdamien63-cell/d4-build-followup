@@ -1,4 +1,4 @@
-import type { BuildSummary, BuildWithProgress, HistoryEvent, LanInfo, UpdateCheck } from '../../shared/types.ts'
+import type { BuildSummary, BuildWithProgress, FarmPlan, HistoryEvent, LanInfo, UpdateCheck } from '../../shared/types.ts'
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -23,6 +23,7 @@ export const api = {
   history: (id: number) => request<HistoryEvent[]>(`/api/builds/${id}/history`),
   checkUpdates: (id: number, force = false) => request<UpdateCheck>(`/api/builds/${id}/updates${force ? '?force=1' : ''}`),
   lan: () => request<LanInfo>('/api/lan'),
+  farm: (id: number, variant: number) => request<FarmPlan>(`/api/builds/${id}/farm?variant=${variant}`),
   setProgress: (id: number, keys: string[], done: boolean) =>
     request<{ progress: Record<string, string> }>(`/api/builds/${id}/progress`, {
       method: 'PUT',

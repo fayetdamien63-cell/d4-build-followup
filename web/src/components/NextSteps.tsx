@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { boardKeys } from '../../../shared/progress.ts'
-import type { Build, Variant } from '../../../shared/types.ts'
+import type { Build, FarmSource, Variant } from '../../../shared/types.ts'
 import type { Tab } from '../pages/BuildPage.tsx'
 import { gearTodos, stat, tierLabel } from '../stats.ts'
 import type { BuildState } from '../useBuild.ts'
@@ -10,7 +10,19 @@ import { Check, Counter, ProgressBar } from './ui.tsx'
 
 const GEAR_TODO_LIMIT = 8
 
-export function NextSteps({ build, variant, state, goTo }: { build: Build; variant: Variant; state: BuildState; goTo: (t: Tab, step?: number) => void }) {
+export function NextSteps({
+  build,
+  variant,
+  state,
+  goTo,
+  farmSources,
+}: {
+  build: Build
+  variant: Variant
+  state: BuildState
+  goTo: (t: Tab, step?: number) => void
+  farmSources: Map<string, FarmSource>
+}) {
   const { isDone, setDone } = state
   const progress = state.data?.progress ?? {}
   // Ce qui vient d'être coché ici reste affiché (barré) : la liste ne bouge pas sous le curseur.
@@ -121,6 +133,7 @@ export function NextSteps({ build, variant, state, goTo }: { build: Build; varia
                   </span>
                   <span className={t.tier === 0 ? 'todo-item-name' : ''}>{t.label}</span>
                   {t.detail === 'Greater' && <span className="badge badge-ga">★ GA</span>}
+                  {farmSources.has(t.key) && <span className="todo-source">→ {farmSources.get(t.key)!.name}</span>}
                 </Check>
               ))}
             </div>

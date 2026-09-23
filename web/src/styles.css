@@ -1826,6 +1826,136 @@ button {
   }
 }
 
+/* ---------- Farm ---------- */
+
+.farm-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 22px 24px;
+  margin-bottom: 20px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(227, 183, 105, 0.35);
+  background:
+    radial-gradient(600px 200px at 100% 0%, rgba(192, 57, 43, 0.18), transparent 70%),
+    linear-gradient(135deg, var(--surface-2), var(--surface));
+}
+.farm-hero-label {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+.farm-hero h2 {
+  font-size: 26px;
+  margin: 4px 0 8px;
+}
+.farm-hero p {
+  margin: 0 0 14px;
+  color: var(--muted);
+}
+.farm-hero p strong {
+  color: var(--r-unique);
+}
+.farm-hero-foot {
+  margin-top: 12px;
+}
+.farm-facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 8px 18px;
+  margin: 0;
+}
+.farm-facts div {
+  min-width: 0;
+}
+.farm-facts dt {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--faint);
+}
+.farm-facts dd {
+  margin: 0;
+  font-size: 13px;
+}
+.farm-desc {
+  grid-column: 1 / -1;
+  color: var(--muted);
+}
+.farm-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+  align-items: start;
+}
+.farm-card {
+  display: grid;
+  gap: 14px;
+  padding: 16px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface);
+}
+.farm-card.is-best {
+  border-color: rgba(227, 183, 105, 0.45);
+}
+.farm-card-head h3 {
+  font-size: 16px;
+  margin-top: 2px;
+}
+.farm-kind {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent-strong);
+}
+.kind-mythic .farm-kind { color: var(--r-mythic); }
+.kind-runes .farm-kind { color: var(--r-magic); }
+.kind-pool .farm-kind,
+.kind-world .farm-kind,
+.kind-unknown .farm-kind { color: var(--muted); }
+.farm-card .farm-facts {
+  grid-template-columns: 1fr;
+  gap: 6px;
+  padding: 10px 12px;
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+}
+.farm-targets {
+  display: grid;
+}
+.farm-target .check-label {
+  display: grid;
+}
+.farm-target-name {
+  font-weight: 600;
+}
+.rarity-unique .farm-target-name { color: var(--r-unique); }
+.rarity-mythic .farm-target-name { color: var(--r-mythic); }
+.rarity-legendary .farm-target-name { color: var(--r-legendary); }
+.rarity-rune .farm-target-name { color: var(--r-magic); }
+.farm-target.is-checked .farm-target-name { color: var(--muted); }
+.farm-target-slot {
+  font-size: 12px;
+  color: var(--faint);
+}
+.farm-done,
+.farm-credit {
+  margin: 18px 0 0;
+}
+.farm-credit {
+  margin-top: 8px;
+}
+.todo-source {
+  display: block;
+  font-size: 11px;
+  color: var(--gold);
+  margin-top: 2px;
+}
+
 /* ---------- Responsive ---------- */
 
 @media (max-width: 1080px) {

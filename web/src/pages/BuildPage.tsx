@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
-import type { UpdateCheck } from '../../../shared/types.ts'
+import type { FarmPlan, UpdateCheck } from '../../../shared/types.ts'
 import { api } from '../api.ts'
+import { FarmView, sourceByKey } from '../components/FarmView.tsx'
 import { GearView } from '../components/GearView.tsx'
 import { Journal } from '../components/Journal.tsx'
 import { UpdateBanner } from '../components/Updates.tsx'
@@ -13,10 +14,11 @@ import { formatDate } from '../format.ts'
 import { allGearKeys, paragonKeys, pct, skillKeys, stat } from '../stats.ts'
 import { useBuild } from '../useBuild.ts'
 
-export type Tab = 'next' | 'gear' | 'skills' | 'paragon' | 'journal'
+export type Tab = 'next' | 'farm' | 'gear' | 'skills' | 'paragon' | 'journal'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'next', label: 'Prochaines étapes' },
+  { id: 'farm', label: 'Farm' },
   { id: 'gear', label: 'Équipement' },
   { id: 'skills', label: 'Compétences' },
   { id: 'paragon', label: 'Parangon' },
@@ -41,6 +43,20 @@ export function BuildPage({ id }: { id: number }) {
   }, [id])
 
   const variant = data ? (data.build.variants[data.activeVariant] ?? data.build.variants[0]) : null
+  const [farm, setFarm] = useState<{ plan: FarmPlan | null; error: string | null }>({ plan: null, error: null })
+
+  // Le plan de farm dépend de la variante et de la version du build (après une mise à jour).
+  const variantIndex = variant?.index
+  const buildVersion = data?.build.sourceDate
+  useEffect(() => {
+    if (variantIndex === undefined) return
+    setFarm({ plan: null, error: null })
+    api.farm(id, variantIndex).then(
+      (plan) => setFarm({ plan, error: null }),
+      (err: Error) => setFarm({ plan: null, error: err.message }),
+    )
+  }, [id, variantIndex, buildVersion])
+  const farmSources = useMemo(() => sourceByKey(farm.plan), [farm.plan])
 
   const stats = useMemo(() => {
     if (!data || !variant) return null
@@ -181,7 +197,8 @@ export function BuildPage({ id }: { id: number }) {
       </nav>
 
       <div className="tab-panel" role="tabpanel">
-        {tab === 'next' && <NextSteps build={build} variant={variant} state={state} goTo={goTo} />}
+        {tab === 'next' && <NextSteps build={build} variant={variant} state={state} goTo={goTo} farmSources={farmSources} />}
+        {tab === 'farm' && <FarmView plan={farm.plan} error={farm.error} state={state} goTo={goTo} />}
         {tab === 'gear' && <GearView variant={variant} state={state} />}
         {tab === 'skills' && <SkillsView variant={variant} state={state} />}
         {tab === 'journal' && <Journal build={build} variantIndex={variant.index} state={state} />}

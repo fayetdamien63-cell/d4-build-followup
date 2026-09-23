@@ -1,15 +1,17 @@
 import { afterAll, describe, expect, it } from 'vitest'
-import type { BuildSummary, BuildWithProgress, HistoryEvent, UpdateCheck } from '../../shared/types.ts'
+import type { BuildSummary, BuildWithProgress, FarmPlan, HistoryEvent, UpdateCheck } from '../../shared/types.ts'
 import type { RawProfileResponse } from './maxroll/client.ts'
 import { buildApp } from './app.ts'
 import { Store } from './db.ts'
-import { gameData, profile } from './testFixtures.ts'
+import { parseLootTable } from './maxroll/loot.ts'
+import { gameData, lootHtml, profile } from './testFixtures.ts'
 
 let remote: RawProfileResponse = profile
 let clock = 0
 const app = buildApp({
   store: new Store(':memory:'),
   loadGameData: async () => gameData,
+  loadLootTable: async () => parseLootTable(lootHtml),
   fetchProfile: async () => remote,
   now: () => clock,
   resolvePlanner: async (input) => ({ plannerId: input.includes('test1234') ? 'test1234' : 'other', variantHint: null }),
@@ -78,6 +80,13 @@ describe('API', () => {
     // Ni les jambières (décochées plus haut) ni l'affixe modifié n'étaient validés : pas d'alerte.
     expect(endgame.removed.find((e) => e.key === 'v1:gear:14')?.wasDone).toBeUndefined()
     expect(endgame.changed[0].wasDone).toBeUndefined()
+  })
+
+  it('calcule le plan de farm de la variante active', async () => {
+    const plan = (await app.inject({ url: `/api/builds/${id}/farm` })).json() as FarmPlan
+    expect(plan.variant).toBe(1)
+    expect(plan.sources.map((s) => s.name)).toEqual(['Lord Test', 'Rune Drops'])
+    expect((await app.inject({ url: `/api/builds/${id}/farm?variant=7` })).statusCode).toBe(400)
   })
 
   it('change de variante active et valide l’indice', async () => {

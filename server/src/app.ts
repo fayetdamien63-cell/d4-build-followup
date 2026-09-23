@@ -4,15 +4,18 @@ import fastifyStatic from '@fastify/static'
 import Fastify, { type FastifyReply } from 'fastify'
 import { countDone, variantKeys } from '../../shared/progress.ts'
 import { diffBuilds } from '../../shared/labels.ts'
-import type { Build, BuildSummary, BuildWithProgress, HistoryEvent, LanInfo, UpdateCheck } from '../../shared/types.ts'
+import type { Build, BuildSummary, BuildWithProgress, FarmPlan, HistoryEvent, LanInfo, UpdateCheck } from '../../shared/types.ts'
 import type { Store } from './db.ts'
 import { fetchProfile, resolvePlanner, type RawProfileResponse } from './maxroll/client.ts'
 import { getGameData, type GameData } from './maxroll/gameData.ts'
 import { Normalizer } from './maxroll/normalize.ts'
+import { getLootTable, type LootTable } from './maxroll/loot.ts'
+import { buildFarmPlan } from './farm.ts'
 
 export interface AppDeps {
   store: Store
   loadGameData: () => Promise<GameData>
+  loadLootTable: () => Promise<LootTable>
   fetchProfile?: (plannerId: string) => Promise<RawProfileResponse>
   resolvePlanner?: typeof resolvePlanner
   webDist?: string
@@ -26,7 +29,8 @@ export interface AppDeps {
 const UPDATE_CHECK_TTL_MS = 30 * 60 * 1000
 
 export function defaultDeps(dataDir: string, store: Store): AppDeps {
-  return { store, loadGameData: () => getGameData(path.join(dataDir, 'cache')) }
+  const cacheDir = path.join(dataDir, 'cache')
+  return { store, loadGameData: () => getGameData(cacheDir), loadLootTable: () => getLootTable(cacheDir) }
 }
 
 export function buildApp(deps: AppDeps) {
@@ -92,6 +96,17 @@ export function buildApp(deps: AppDeps) {
     const id = parseId(req.params.id)
     if (!store.getBuild(id)) return notFound(reply)
     return store.getHistory(id)
+  })
+
+  /** Où farmer les uniques, mythiques et runes manquants d'une variante. */
+  app.get<{ Params: { id: string }; Querystring: { variant?: string } }>('/api/builds/:id/farm', async (req, reply): Promise<FarmPlan | FastifyReply> => {
+    const id = parseId(req.params.id)
+    const found = store.getBuild(id)
+    if (!found) return notFound(reply)
+    const variant = req.query.variant !== undefined ? Number(req.query.variant) : found.activeVariant
+    if (!found.build.variants[variant]) return reply.code(400).send({ error: 'Variante invalide' })
+    const [loot, game] = await Promise.all([deps.loadLootTable(), deps.loadGameData()])
+    return buildFarmPlan(found.build, variant, loot, game)
   })
 
   /** Compare le build local à la version actuelle sur Maxroll, sans rien modifier. */

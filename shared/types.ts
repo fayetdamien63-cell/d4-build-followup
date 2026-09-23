@@ -168,3 +168,42 @@ export interface LanInfo {
   enabled: boolean
   urls: string[]
 }
+
+// ---- Farm ----
+
+export interface LootSource {
+  id: string
+  name: string
+  kind: 'boss' | 'mythic' | 'pool' | 'runes' | 'trophy' | 'world'
+  /** Clé d'invocation (boss). */
+  key: string | null
+  activity: string | null
+  element: string | null
+  requirement: string | null
+  location: string | null
+  description: string | null
+  items: { id: number; name: string }[]
+}
+
+export interface FarmTarget {
+  /** Clé de progression cochée quand l'objet est obtenu. */
+  key: string
+  name: string
+  slotLabel: string
+  rarity: Rarity | 'rune'
+  /** Autres sources possibles (ex : pool général). */
+  alsoIn: string[]
+}
+
+export interface FarmSource extends Omit<LootSource, 'items'> {
+  targets: FarmTarget[]
+}
+
+export interface FarmPlan {
+  variant: number
+  sourceUrl: string
+  updatedAt: string | null
+  sources: FarmSource[]
+  /** Objets uniques sans source connue dans la table de loot. */
+  unmatched: FarmTarget[]
+}

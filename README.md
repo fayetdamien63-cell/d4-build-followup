@@ -58,6 +58,13 @@ Colle ensuite l'URL d'un guide (`https://maxroll.gg/d4/build-guides/…`), d'un 
   Le cache hors ligne (service worker) n'est disponible que sur `localhost` ou en HTTPS : via l'adresse IP locale, le téléphone
   a besoin du PC allumé.
 
+## Liste de farm
+
+L'onglet **Farm** indique où trouver chaque unique, mythique et rune du build encore manquant. Pour chaque source, il donne le boss,
+la clé d'invocation, l'activité à faire, le lieu et l'élément. La meilleure prochaine cible est mise en avant, et
+« Prochaines étapes » indique la source de chaque objet. Les données viennent de la page Maxroll
+[Boss Loot Table Cheat Sheet](https://maxroll.gg/d4/resources/boss-loot-table-cheat-sheet), analysée et mise en cache 3 jours.
+
 ## Architecture
 
 ```
@@ -67,6 +74,8 @@ server/   Fastify + SQLite (data/tracker.db)
   src/maxroll/gameData.ts   Données de jeu Maxroll (~12 Mo), en cache disque 7 jours
   src/maxroll/normalize.ts  JSON Maxroll → modèle lisible (noms, affixes, grilles de parangon)
   src/maxroll/text.ts       Rendu des gabarits de texte du jeu ([{value}*100|%|], {if:…}, …)
+  src/maxroll/loot.ts       Table de loot des boss (page Maxroll) → sources et objets
+  src/farm.ts               Croisement build × table de loot → plan de farm
 web/      React + Vite
 ```
 
