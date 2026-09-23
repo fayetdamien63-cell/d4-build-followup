@@ -229,12 +229,13 @@ export class Normalizer {
     const key = `${prefix}:gear:${slot}`
     const def = this.game.items[item.id]
     const itemType = def?.type ?? null
-    const rarity = itemRarity(item)
+    const rarity = itemRarity(item, def?.set)
     const aspectRaw = item.aspects?.[0]
     const aspect = aspectRaw ? this.affix(`${key}:aspect`, aspectRaw, true) : null
     const aspectName = aspectRaw ? this.game.affixById.get(aspectRaw.nid)?.affix.prefix : undefined
     let name: string
-    if (rarity === 'unique' || rarity === 'mythic') name = def?.name ?? item.name ?? prettifyId(item.id)
+    // Uniques et pièces de set ont un nom fixe (celui du planner est un nom aléatoire de rare).
+    if (rarity === 'unique' || rarity === 'mythic' || rarity === 'set') name = def?.name ?? item.name ?? prettifyId(item.id)
     else if (aspectName) name = `Aspect ${aspectName}`
     else name = item.name ?? def?.name ?? prettifyId(item.id)
     if (aspect && aspectName) aspect.text = `${aspectName} : ${aspect.text}`
@@ -245,7 +246,12 @@ export class Normalizer {
       slotLabel: slotLabel(slot, itemType),
       itemId: item.id,
       name,
-      baseType: rarity === 'unique' || rarity === 'mythic' ? null : (def?.name ?? (itemType ? this.game.itemTypes[itemType]?.name ?? itemType : null)),
+      baseType:
+        rarity === 'set'
+          ? (this.game.itemSets?.[def!.set!]?.name ?? prettifyId(def!.set!))
+          : rarity === 'unique' || rarity === 'mythic'
+            ? null
+            : (def?.name ?? (itemType ? (this.game.itemTypes[itemType]?.name ?? itemType) : null)),
       rarity,
       power: item.power ?? null,
       aspect,
@@ -315,8 +321,9 @@ export class Normalizer {
   }
 }
 
-function itemRarity(item: RawItem): Rarity {
+function itemRarity(item: RawItem, set: string | undefined): Rarity {
   if (item.mythic) return 'mythic'
+  if (set) return 'set'
   if (/_Unique_/i.test(item.id)) return 'unique'
   if (/Legendary/i.test(item.id) || item.aspects?.length) return 'legendary'
   if (/_Rare_/i.test(item.id)) return 'rare'

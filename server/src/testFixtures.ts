@@ -20,6 +20,7 @@ export const gameData = indexGameData({
     Pants_Legendary_Generic_001: { id: 11, type: 'Legs', name: 'Runic Leggings' },
     Gem_Ruby_07: { id: 12, type: 'Gem', name: 'Grand Ruby' },
     Rune_Condition_Test: { id: 13, type: 'ConditionRune', name: 'Igni' },
+    Talisman_Charm_Set_Test_01: { id: 14, type: 'Charm', name: 'Fer of the Nameless', set: 'Talisman_Test' },
   },
   classes: { '7': { nameMale: 'Warlock' } },
   skills: {
@@ -39,6 +40,7 @@ export const gameData = indexGameData({
   attributes: { '74': { name: 'Resistance' }, '134': { name: 'Max_Life' }, '1173': { name: 'Affix_Value_1' } },
   attributeDescriptions: { Max_Life: '+[{value}||] Maximum Life', Resistance: '+[{value2}||] {value1} Resistance' },
   itemTypes: { Legs: { name: 'Pants' } },
+  itemSets: { Talisman_Test: { name: 'Rite of the Nameless' } },
 } satisfies RawGameData)
 
 export const profile: RawProfileResponse = {
@@ -52,6 +54,7 @@ export const profile: RawProfileResponse = {
     strAndWeak: { strengths: ['Fun'], weaknesses: ['Slow'] },
     items: {
       '1': { id: 'Helm_Unique_Test_001', power: 900, mythic: false, explicits: [{ nid: 4, values: [0.5] }, { nid: 1, values: [2000], greater: true, upgrade: 1 }], sockets: ['Gem_Ruby_07'] },
+      '3': { id: 'Talisman_Charm_Set_Test_01', name: 'Empyrian Guide', explicits: [{ nid: 1, values: [300] }] },
       '2': { id: 'Pants_Legendary_Generic_001', name: 'Random Name', explicits: [{ nid: 2, values: [3750] }], aspects: [{ nid: 3, values: [7] }], tempered: [{ nid: 1, values: [500] }], sockets: ['Rune_Condition_Test'] },
     },
     profiles: [
@@ -67,7 +70,7 @@ export const profile: RawProfileResponse = {
       {
         name: 'Endgame',
         class: 7,
-        items: { '4': 1, '14': 2 },
+        items: { '4': 1, '14': 2, '21': 3 },
         skillTree: { steps: [{ name: 'Endgame', data: { '1': 15, '2': 1 } }] },
         paragon: {
           steps: [

@@ -12,6 +12,7 @@ const RARITY_LABEL: Record<GearSlot['rarity'], string> = {
   magic: 'Magique',
   rare: 'Rare',
   legendary: 'Légendaire',
+  set: 'Set',
   unique: 'Unique',
   mythic: 'Mythique',
 }

@@ -37,6 +37,11 @@ describe('Normalizer', () => {
     expect(pants.tempered[0].text).toBe('+500 Maximum Life')
   })
 
+  it('reconnaît les pièces de set (nom fixe et nom du set)', () => {
+    const charm = endgame.gear.find((g) => g.slot === '21')!
+    expect(charm).toMatchObject({ slotLabel: 'Charme 1', name: 'Fer of the Nameless', baseType: 'Rite of the Nameless', rarity: 'set' })
+  })
+
   it('calcule les nœuds de parangon ajoutés par étape', () => {
     const [s1, s2] = endgame.paragonSteps
     const grid = build.paragonGrids[s1.boards[0].gridId]

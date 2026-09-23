@@ -18,7 +18,7 @@ export interface RawAffix {
 export interface RawGameData {
   version: string
   affixes: Record<string, RawAffix>
-  items: Record<string, { id: number; type?: string; name?: string; magicType?: number }>
+  items: Record<string, { id: number; type?: string; name?: string; magicType?: number; set?: string }>
   classes: Record<string, { nameMale: string }>
   skills: Record<string, { name: string; mods?: { id: number; name: string }[] }>
   skillTrees: Record<string, { nodes: { id: number; rewardId: string }[] }>
@@ -30,6 +30,7 @@ export interface RawGameData {
   attributeDescriptions: Record<string, string>
   itemTypes: Record<string, { name: string }>
   worldTiers?: { name: string }[]
+  itemSets?: Record<string, { name: string }>
 }
 
 export interface GameData extends RawGameData {
