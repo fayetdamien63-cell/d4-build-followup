@@ -77,3 +77,16 @@ describe('withImpliedKeys', () => {
     expect(withImpliedKeys(all, ['v0:skill:1@5'], false).sort()).toEqual(['v0:skill:1@15', 'v0:skill:1@5'])
   })
 })
+
+describe('describeVariant', () => {
+  it('donne un libellé lisible à chaque clé', async () => {
+    const { describeVariant } = await import('../../../shared/labels.ts')
+    const labels = describeVariant(build, endgame)
+    expect(labels.get('v1:gear:4')).toMatchObject({ label: 'Crown of Tests', category: 'gear', milestone: true })
+    expect(labels.get('v1:gear:14:aspect')?.label).toMatch(/^Overwhelming/)
+    expect(labels.get('v1:para:Board_A:4')).toMatchObject({ label: 'Dark Sign', context: 'Plateau Start' })
+    // Le plateau de départ n'a pas de clé "débloqué".
+    expect(labels.has('v1:board:Board_A')).toBe(false)
+    expect([...labels.keys()].sort()).toEqual(variantKeys(build, endgame).sort())
+  })
+})

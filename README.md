@@ -19,6 +19,15 @@ npm run build
 npm start          # http://localhost:5174
 ```
 
+Pour l'ouvrir aussi sur ton téléphone (même Wi-Fi) :
+
+```bash
+npm run build
+npm run start:lan  # affiche l'adresse réseau ; bouton « Téléphone » dans l'app pour le QR code
+```
+
+> ⚠️ En mode `start:lan`, l'app n'a pas d'authentification : tout appareil du réseau local peut l'ouvrir.
+
 Colle ensuite l'URL d'un guide (`https://maxroll.gg/d4/build-guides/…`), d'un planner
 (`https://maxroll.gg/d4/planner/xxxx#5`) ou directement un ID de planner.
 
@@ -35,15 +44,38 @@ Colle ensuite l'URL d'un guide (`https://maxroll.gg/d4/build-guides/…`), d'un 
 - Valider le rang 15 d'une compétence valide aussi les rangs inférieurs, et inversement pour l'invalidation.
 - **Mettre à jour** re-télécharge le build depuis Maxroll en conservant la progression.
 
+## Phase 2
+
+- **Journal** : chaque action est horodatée (onglet *Journal*, groupé par jour). On y trouve les jalons ★ (objets uniques ou
+  mythiques, plateaux, nœuds légendaires), le détail des validations en masse et des statistiques (validations, 7 derniers jours, jours actifs).
+  Les objets affichent leur date d'obtention.
+- **Mises à jour du guide** : à l'ouverture d'un build (et sur l'accueil), l'app compare avec Maxroll (résultat gardé en cache 30 min).
+  Si le guide a changé, un bandeau propose le **diff** : ajouts, retraits et modifications par variante et catégorie, avec
+  une alerte sur les éléments déjà validés. On l'applique en un clic, sans perdre sa progression.
+- **PWA** : l'app s'installe comme une application (Chrome/Edge sur PC : icône « Installer ») et reste consultable hors ligne
+  (dernière version connue, en lecture seule).
+- **Téléphone** : mode `start:lan` et QR code. Sur le téléphone, « Ajouter à l'écran d'accueil » l'ouvre en plein écran.
+  Le cache hors ligne (service worker) n'est disponible que sur `localhost` ou en HTTPS : via l'adresse IP locale, le téléphone
+  a besoin du PC allumé.
+
+## Liste de farm
+
+L'onglet **Farm** indique où trouver chaque unique, mythique et rune du build encore manquant. Pour chaque source, il donne le boss,
+la clé d'invocation, l'activité à faire, le lieu et l'élément. La meilleure prochaine cible est mise en avant, et
+« Prochaines étapes » indique la source de chaque objet. Les données viennent de la page Maxroll
+[Boss Loot Table Cheat Sheet](https://maxroll.gg/d4/resources/boss-loot-table-cheat-sheet), analysée et mise en cache 3 jours.
+
 ## Architecture
 
 ```
-shared/   Modèle normalisé (types) et logique de progression, partagés serveur/front
+shared/   Modèle normalisé (types), logique de progression, libellés et diff de builds, partagés serveur/front
 server/   Fastify + SQLite (data/tracker.db)
   src/maxroll/client.ts     Résolution URL → planner, appel de l'endpoint profil
   src/maxroll/gameData.ts   Données de jeu Maxroll (~12 Mo), en cache disque 7 jours
   src/maxroll/normalize.ts  JSON Maxroll → modèle lisible (noms, affixes, grilles de parangon)
   src/maxroll/text.ts       Rendu des gabarits de texte du jeu ([{value}*100|%|], {if:…}, …)
+  src/maxroll/loot.ts       Table de loot des boss (page Maxroll) → sources et objets
+  src/farm.ts               Croisement build × table de loot → plan de farm
 web/      React + Vite
 ```
 

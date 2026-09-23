@@ -2,6 +2,7 @@ import { gearKeys, masterworkKey } from '../../../shared/progress.ts'
 import type { Affix, GearSlot, Variant } from '../../../shared/types.ts'
 import { stat } from '../stats.ts'
 import type { BuildState } from '../useBuild.ts'
+import { formatDate } from '../format.ts'
 import { Check, Counter, Empty, ProgressBar } from './ui.tsx'
 
 const RARITY_LABEL: Record<GearSlot['rarity'], string> = {
@@ -30,6 +31,7 @@ export function GearCard({ slot, state }: { slot: GearSlot; state: BuildState })
   const s = stat(keys, data?.progress ?? {})
   const complete = s.done === s.total
   const obtained = isDone(slot.key)
+  const obtainedAt = data?.progress[slot.key]
 
   return (
     <article className={`gear-card rarity-${slot.rarity} ${obtained ? 'is-obtained' : ''} ${complete ? 'is-complete' : ''}`}>
@@ -44,6 +46,7 @@ export function GearCard({ slot, state }: { slot: GearSlot; state: BuildState })
             {RARITY_LABEL[slot.rarity]}
             {slot.baseType && ` · ${slot.baseType}`}
           </span>
+          {obtainedAt && <span className="gear-date">Obtenu {formatDate(obtainedAt)}</span>}
         </Check>
         <ProgressBar stat={s} size="sm" />
       </header>

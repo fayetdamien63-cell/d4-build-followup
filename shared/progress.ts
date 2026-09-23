@@ -24,7 +24,7 @@ export function boardNodeKeys(build: WithGrids, board: ParagonBoardStep, positio
 }
 
 export function boardKeys(build: WithGrids, board: ParagonBoardStep): string[] {
-  return [board.key, ...(board.glyph ? [board.glyph.key] : []), ...boardNodeKeys(build, board)]
+  return [...(board.isStart ? [] : [board.key]), ...(board.glyph ? [board.glyph.key] : []), ...boardNodeKeys(build, board)]
 }
 
 /** Toutes les clés cochables d'une variante (sans doublons). */

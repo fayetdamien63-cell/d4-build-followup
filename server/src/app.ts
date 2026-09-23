@@ -3,23 +3,34 @@ import path from 'node:path'
 import fastifyStatic from '@fastify/static'
 import Fastify, { type FastifyReply } from 'fastify'
 import { countDone, variantKeys } from '../../shared/progress.ts'
-import type { BuildSummary, BuildWithProgress } from '../../shared/types.ts'
+import { diffBuilds } from '../../shared/labels.ts'
+import type { Build, BuildSummary, BuildWithProgress, FarmPlan, HistoryEvent, LanInfo, UpdateCheck } from '../../shared/types.ts'
 import type { Store } from './db.ts'
 import { fetchProfile, resolvePlanner, type RawProfileResponse } from './maxroll/client.ts'
 import { getGameData, type GameData } from './maxroll/gameData.ts'
 import { Normalizer } from './maxroll/normalize.ts'
+import { getLootTable, type LootTable } from './maxroll/loot.ts'
+import { buildFarmPlan } from './farm.ts'
 
 export interface AppDeps {
   store: Store
   loadGameData: () => Promise<GameData>
+  loadLootTable: () => Promise<LootTable>
   fetchProfile?: (plannerId: string) => Promise<RawProfileResponse>
   resolvePlanner?: typeof resolvePlanner
   webDist?: string
   logger?: boolean
+  /** Adresses pour ouvrir l'app depuis un autre appareil du réseau local. */
+  lanInfo?: () => LanInfo
+  now?: () => number
 }
 
+/** Durée pendant laquelle une vérification de mise à jour est réutilisée. */
+const UPDATE_CHECK_TTL_MS = 30 * 60 * 1000
+
 export function defaultDeps(dataDir: string, store: Store): AppDeps {
-  return { store, loadGameData: () => getGameData(path.join(dataDir, 'cache')) }
+  const cacheDir = path.join(dataDir, 'cache')
+  return { store, loadGameData: () => getGameData(cacheDir), loadLootTable: () => getLootTable(cacheDir) }
 }
 
 export function buildApp(deps: AppDeps) {
@@ -27,6 +38,8 @@ export function buildApp(deps: AppDeps) {
   const fetchP = deps.fetchProfile ?? fetchProfile
   const resolveP = deps.resolvePlanner ?? resolvePlanner
   const app = Fastify({ logger: deps.logger ?? false })
+  const now = deps.now ?? Date.now
+  const updateChecks = new Map<number, { at: number; result: UpdateCheck }>()
 
   const withProgress = (id: number): BuildWithProgress | null => {
     const found = store.getBuild(id)
@@ -77,6 +90,51 @@ export function buildApp(deps: AppDeps) {
     return reply.code(201).send({ id, existed: false })
   })
 
+  app.get('/api/lan', async (): Promise<LanInfo> => deps.lanInfo?.() ?? { enabled: false, urls: [] })
+
+  app.get<{ Params: { id: string } }>('/api/builds/:id/history', async (req, reply): Promise<HistoryEvent[] | FastifyReply> => {
+    const id = parseId(req.params.id)
+    if (!store.getBuild(id)) return notFound(reply)
+    return store.getHistory(id)
+  })
+
+  /** Où farmer les uniques, mythiques et runes manquants d'une variante. */
+  app.get<{ Params: { id: string }; Querystring: { variant?: string } }>('/api/builds/:id/farm', async (req, reply): Promise<FarmPlan | FastifyReply> => {
+    const id = parseId(req.params.id)
+    const found = store.getBuild(id)
+    if (!found) return notFound(reply)
+    const variant = req.query.variant !== undefined ? Number(req.query.variant) : found.activeVariant
+    if (!found.build.variants[variant]) return reply.code(400).send({ error: 'Variante invalide' })
+    const [loot, game] = await Promise.all([deps.loadLootTable(), deps.loadGameData()])
+    return buildFarmPlan(found.build, variant, loot, game)
+  })
+
+  /** Compare le build local à la version actuelle sur Maxroll, sans rien modifier. */
+  app.get<{ Params: { id: string }; Querystring: { force?: string } }>('/api/builds/:id/updates', async (req, reply) => {
+    const id = parseId(req.params.id)
+    const found = store.getBuild(id)
+    if (!found) return notFound(reply)
+    const cached = updateChecks.get(id)
+    if (cached && !req.query.force && now() - cached.at < UPDATE_CHECK_TTL_MS) return cached.result
+
+    const raw = await fetchP(found.build.sourceId)
+    const local = found.build
+    let result: UpdateCheck = {
+      status: 'up-to-date',
+      checkedAt: new Date(now()).toISOString(),
+      localDate: local.sourceDate,
+      remoteDate: raw.date ?? null,
+    }
+    if (raw.date !== local.sourceDate) {
+      const { build: remote } = new Normalizer(await deps.loadGameData()).normalize(raw, local.sourceUrl)
+      const diff = diffBuilds(local, { ...remote, id, importedAt: local.importedAt } as Build, store.getProgress(id))
+      // Une date différente sans aucun changement visible (ex: simple réenregistrement) n'est pas une mise à jour.
+      if (diff.total > 0) result = { ...result, status: 'update-available', diff }
+    }
+    updateChecks.set(id, { at: now(), result })
+    return result
+  })
+
   app.get<{ Params: { id: string } }>('/api/builds/:id', async (req, reply) => withProgress(parseId(req.params.id)) ?? notFound(reply))
 
   /** Re-télécharge le build depuis Maxroll ; la progression est conservée (clés stables). */
@@ -87,6 +145,7 @@ export function buildApp(deps: AppDeps) {
     const [raw, game] = await Promise.all([fetchP(found.build.sourceId), deps.loadGameData()])
     const { build } = new Normalizer(game).normalize(raw, found.build.sourceUrl)
     store.updateBuildData(id, build, raw)
+    updateChecks.delete(id)
     return withProgress(id)
   })
 
@@ -115,6 +174,7 @@ export function buildApp(deps: AppDeps) {
     const id = parseId(req.params.id)
     if (!store.getBuild(id)) return notFound(reply)
     store.deleteBuild(id)
+    updateChecks.delete(id)
     return reply.code(204).send()
   })
 

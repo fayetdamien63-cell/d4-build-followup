@@ -13,9 +13,20 @@ export function Home() {
   const [input, setInput] = useState('')
   const [importing, setImporting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [updates, setUpdates] = useState<Record<number, boolean>>({})
 
   useEffect(() => {
-    api.listBuilds().then(setBuilds, (err: Error) => setError(`Serveur injoignable : ${err.message}`))
+    api.listBuilds().then(
+      async (list) => {
+        setBuilds(list)
+        // Vérifie les mises à jour Maxroll une par une, sans bloquer l'affichage.
+        for (const b of list) {
+          const check = await api.checkUpdates(b.id).catch(() => null)
+          if (check?.status === 'update-available') setUpdates((u) => ({ ...u, [b.id]: true }))
+        }
+      },
+      (err: Error) => setError(`Serveur injoignable : ${err.message}`),
+    )
   }, [])
 
   async function onImport(e: FormEvent) {
@@ -114,7 +125,10 @@ export function Home() {
               </div>
               <div className="build-card-progress">
                 <div className="build-card-meta">
-                  <span className="pill">{b.variantName}</span>
+                  <span className="build-card-pills">
+                    <span className="pill">{b.variantName}</span>
+                    {updates[b.id] && <span className="pill pill-update" title="Le guide a changé sur Maxroll">● Mise à jour</span>}
+                  </span>
                   <strong>{pct(b)}%</strong>
                 </div>
                 <ProgressBar stat={b} />

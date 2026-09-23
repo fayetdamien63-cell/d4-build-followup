@@ -2,7 +2,7 @@
 import { mkdirSync } from 'node:fs'
 import path from 'node:path'
 import { DatabaseSync } from 'node:sqlite'
-import type { Build } from '../../shared/types.ts'
+import type { Build, HistoryEvent } from '../../shared/types.ts'
 
 export type NewBuild = Omit<Build, 'id' | 'importedAt'>
 
@@ -37,11 +37,23 @@ export class Store {
         done_at  TEXT NOT NULL,
         PRIMARY KEY (build_id, key)
       );
+      -- Journal : chaque action de l'utilisateur (un clic = un événement, même s'il touche plusieurs clés).
+      CREATE TABLE IF NOT EXISTS events (
+        id       INTEGER PRIMARY KEY AUTOINCREMENT,
+        build_id INTEGER NOT NULL REFERENCES builds(id) ON DELETE CASCADE,
+        at       TEXT NOT NULL,
+        done     INTEGER NOT NULL,
+        keys     TEXT NOT NULL
+      );
+      CREATE INDEX IF NOT EXISTS events_build_at ON events(build_id, at DESC);
     `)
   }
 
   private toBuild(row: BuildRow): Build {
-    return { ...(JSON.parse(row.data) as NewBuild), id: row.id, importedAt: row.imported_at }
+    const build = { ...(JSON.parse(row.data) as NewBuild), id: row.id, importedAt: row.imported_at }
+    // Builds importés avant l'ajout de `isStart` : on le déduit de l'identifiant du plateau.
+    for (const v of build.variants) for (const step of v.paragonSteps) for (const b of step.boards) b.isStart ??= b.boardId.endsWith('_00')
+    return build
   }
 
   listBuilds(): { build: Build; activeVariant: number }[] {
@@ -83,17 +95,33 @@ export class Store {
     return Object.fromEntries(rows.map((r) => [r.key, r.done_at]))
   }
 
-  setProgress(buildId: number, keys: string[], done: boolean): void {
+  /** Applique les changements et journalise uniquement les clés dont l'état change réellement. */
+  setProgress(buildId: number, keys: string[], done: boolean): string[] {
     const now = new Date().toISOString()
     const insert = this.db.prepare('INSERT OR IGNORE INTO progress (build_id, key, done_at) VALUES (?, ?, ?)')
     const remove = this.db.prepare('DELETE FROM progress WHERE build_id = ? AND key = ?')
+    const changed: string[] = []
     this.db.exec('BEGIN')
     try {
-      for (const key of keys) done ? insert.run(buildId, key, now) : remove.run(buildId, key)
+      for (const key of new Set(keys)) {
+        const res = done ? insert.run(buildId, key, now) : remove.run(buildId, key)
+        if (Number(res.changes) > 0) changed.push(key)
+      }
+      if (changed.length > 0) {
+        this.db.prepare('INSERT INTO events (build_id, at, done, keys) VALUES (?, ?, ?, ?)').run(buildId, now, done ? 1 : 0, JSON.stringify(changed))
+      }
       this.db.exec('COMMIT')
     } catch (err) {
       this.db.exec('ROLLBACK')
       throw err
     }
+    return changed
+  }
+
+  getHistory(buildId: number, limit = 300): HistoryEvent[] {
+    const rows = this.db
+      .prepare('SELECT id, at, done, keys FROM events WHERE build_id = ? ORDER BY at DESC, id DESC LIMIT ?')
+      .all(buildId, limit) as { id: number; at: string; done: number; keys: string }[]
+    return rows.map((r) => ({ id: r.id, at: r.at, done: r.done === 1, keys: JSON.parse(r.keys) as string[] }))
   }
 }

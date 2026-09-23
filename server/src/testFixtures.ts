@@ -19,6 +19,7 @@ export const gameData = indexGameData({
     Helm_Unique_Test_001: { id: 10, type: 'Helm', name: 'Crown of Tests' },
     Pants_Legendary_Generic_001: { id: 11, type: 'Legs', name: 'Runic Leggings' },
     Gem_Ruby_07: { id: 12, type: 'Gem', name: 'Grand Ruby' },
+    Rune_Condition_Test: { id: 13, type: 'ConditionRune', name: 'Igni' },
   },
   classes: { '7': { nameMale: 'Warlock' } },
   skills: {
@@ -51,7 +52,7 @@ export const profile: RawProfileResponse = {
     strAndWeak: { strengths: ['Fun'], weaknesses: ['Slow'] },
     items: {
       '1': { id: 'Helm_Unique_Test_001', power: 900, mythic: false, explicits: [{ nid: 4, values: [0.5] }, { nid: 1, values: [2000], greater: true, upgrade: 1 }], sockets: ['Gem_Ruby_07'] },
-      '2': { id: 'Pants_Legendary_Generic_001', name: 'Random Name', explicits: [{ nid: 2, values: [3750] }], aspects: [{ nid: 3, values: [7] }], tempered: [{ nid: 1, values: [500] }] },
+      '2': { id: 'Pants_Legendary_Generic_001', name: 'Random Name', explicits: [{ nid: 2, values: [3750] }], aspects: [{ nid: 3, values: [7] }], tempered: [{ nid: 1, values: [500] }], sockets: ['Rune_Condition_Test'] },
     },
     profiles: [
       {
@@ -78,3 +79,22 @@ export const profile: RawProfileResponse = {
     ],
   }),
 }
+
+/** Extrait au format de la page "Boss Loot Table Cheat Sheet" de Maxroll. */
+export const lootHtml = `
+<p>Last Updated: <span>September 22, 2026</span></p>
+<h2 class="x"><span>General Unique Pool</span></h2>
+<p>These Uniques can drop from any boss.</p>
+<ul><li><span class="d4-item" data-d4-id="10">Crown of Tests</span></li></ul>
+<h2>Lord Test</h2>
+<h3>Basic Information</h3><ul>
+<li><span><strong><mark>Requires <a href="#">Torment 1</a> or higher.</mark></strong></span></li>
+<li class="wp-block"><span class="c"><strong class="s"><mark class="m">Activity Required</mark></strong></span>: Complete <span><a href="#">Helltide</a></span></li>
+<li><span><strong><mark>Boss Lair Key</mark></strong></span>: 1x <span><span data-d4-id="99">Lair Key</span></span></li>
+<li><span><strong><mark>Element Type</mark></strong></span>: <span><mark>Fire</mark></span></li></ul>
+<figure><figcaption>The <mark>Test Lair</mark> is located near &#x27;Kyovashad&#x27;</figcaption></figure>
+<p><strong><mark>Warlock<strong>:</strong></mark></strong></p>
+<ul><li><span data-d4-id="10">Crown of Tests</span></li></ul>
+<h2>Rune Drops</h2><p>Runes drop everywhere.</p><ul><li><span data-d4-id="555">Igni</span></li></ul>
+<h2>Summary</h2><ul><li><span data-d4-id="10">Crown of Tests</span></li></ul>
+`

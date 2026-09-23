@@ -75,6 +75,8 @@ export interface ParagonBoardStep {
   name: string
   /** Position dans l'ordre du plateau (0 = plateau de départ). */
   order: number
+  /** Plateau de départ : toujours débloqué, sa clé de plateau n'est pas à cocher. */
+  isStart: boolean
   rotation: number
   glyph: { key: string; id: string; name: string; level: number | null } | null
   gridId: string
@@ -144,4 +146,64 @@ export interface BuildWithProgress {
   activeVariant: number
   /** key -> date ISO de complétion */
   progress: Record<string, string>
+}
+
+export interface HistoryEvent {
+  id: number
+  at: string
+  done: boolean
+  keys: string[]
+}
+
+export interface UpdateCheck {
+  status: 'up-to-date' | 'update-available'
+  checkedAt: string
+  localDate: string | null
+  remoteDate: string | null
+  /** Présent si une mise à jour est disponible. */
+  diff?: import('./labels.ts').BuildDiff
+}
+
+export interface LanInfo {
+  enabled: boolean
+  urls: string[]
+}
+
+// ---- Farm ----
+
+export interface LootSource {
+  id: string
+  name: string
+  kind: 'boss' | 'mythic' | 'pool' | 'runes' | 'trophy' | 'world'
+  /** Clé d'invocation (boss). */
+  key: string | null
+  activity: string | null
+  element: string | null
+  requirement: string | null
+  location: string | null
+  description: string | null
+  items: { id: number; name: string }[]
+}
+
+export interface FarmTarget {
+  /** Clé de progression cochée quand l'objet est obtenu. */
+  key: string
+  name: string
+  slotLabel: string
+  rarity: Rarity | 'rune'
+  /** Autres sources possibles (ex : pool général). */
+  alsoIn: string[]
+}
+
+export interface FarmSource extends Omit<LootSource, 'items'> {
+  targets: FarmTarget[]
+}
+
+export interface FarmPlan {
+  variant: number
+  sourceUrl: string
+  updatedAt: string | null
+  sources: FarmSource[]
+  /** Objets uniques sans source connue dans la table de loot. */
+  unmatched: FarmTarget[]
 }
