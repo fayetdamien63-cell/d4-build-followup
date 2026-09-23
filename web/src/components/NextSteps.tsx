@@ -84,7 +84,7 @@ export function NextSteps({ build, variant, state, goTo }: { build: Build; varia
                   </div>
                   <ProgressBar stat={s} size="sm" />
                   <div className="next-board-todo muted small">
-                    {!isDone(board.key) && <span>Débloquer le plateau</span>}
+                    {!board.isStart && !isDone(board.key) && <span>Débloquer le plateau</span>}
                     {board.glyph && !isDone(board.glyph.key) && (
                       <span>
                         Glyphe {board.glyph.name}

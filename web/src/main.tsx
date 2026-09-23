@@ -11,3 +11,12 @@ createRoot(document.getElementById('root')!).render(
     </ToastProvider>
   </StrictMode>,
 )
+
+// PWA : le service worker n'est actif que sur la version compilée (npm start), pas en développement.
+if (import.meta.env.PROD && 'serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {
+      // Contexte non sécurisé (http://IP-locale) : l'app fonctionne, simplement sans cache hors ligne.
+    })
+  })
+}

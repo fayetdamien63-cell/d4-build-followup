@@ -128,9 +128,11 @@ export function BoardCard({ build, board, state }: { build: Build; board: Parago
         )}
 
         <div className="board-side">
-          <Check checked={isDone(board.key)} onChange={(v) => setDone([board.key], v)} className="line">
-            <span className="line-tag tag-board">Plateau</span>Débloqué et placé
-          </Check>
+          {!board.isStart && (
+            <Check checked={isDone(board.key)} onChange={(v) => setDone([board.key], v)} className="line">
+              <span className="line-tag tag-board">Plateau</span>Débloqué et placé
+            </Check>
+          )}
           {board.glyph && (
             <Check checked={isDone(board.glyph.key)} onChange={(v) => setDone([board.glyph!.key], v)} className="line">
               <span className="line-tag tag-glyph">Glyphe</span>

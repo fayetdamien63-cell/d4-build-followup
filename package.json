@@ -2,12 +2,16 @@
   "name": "d4-build-followup",
   "private": true,
   "version": "0.1.0",
-  "description": "Suivi local de progression d'un build Diablo 4 importé depuis Maxroll",
-  "workspaces": ["server", "web"],
+  "description": "Suivi local de progression d'un build Diablo 4 import\u00e9 depuis Maxroll",
+  "workspaces": [
+    "server",
+    "web"
+  ],
   "scripts": {
     "dev": "concurrently -k -n api,web -c red,yellow \"npm:dev -w server\" \"npm:dev -w web\"",
     "build": "npm run build -w web",
     "start": "npm run start -w server",
+    "start:lan": "npm run start:lan -w server",
     "test": "npm test -w server",
     "typecheck": "npm run typecheck -w server && npm run typecheck -w web"
   },

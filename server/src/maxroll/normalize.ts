@@ -195,6 +195,7 @@ export class Normalizer {
       boardId: raw.id,
       name: def?.name ?? prettifyId(raw.id),
       order,
+      isStart: raw.id.endsWith('_00') || def?.name === 'Start',
       rotation,
       glyph,
       gridId,

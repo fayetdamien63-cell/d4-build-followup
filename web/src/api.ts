@@ -1,4 +1,4 @@
-import type { BuildSummary, BuildWithProgress } from '../../shared/types.ts'
+import type { BuildSummary, BuildWithProgress, HistoryEvent, LanInfo, UpdateCheck } from '../../shared/types.ts'
 
 async function request<T>(url: string, init?: RequestInit): Promise<T> {
   const res = await fetch(url, {
@@ -20,6 +20,9 @@ export const api = {
   deleteBuild: (id: number) => request<void>(`/api/builds/${id}`, { method: 'DELETE' }),
   setActiveVariant: (id: number, activeVariant: number) =>
     request<{ ok: true }>(`/api/builds/${id}`, { method: 'PATCH', body: JSON.stringify({ activeVariant }) }),
+  history: (id: number) => request<HistoryEvent[]>(`/api/builds/${id}/history`),
+  checkUpdates: (id: number, force = false) => request<UpdateCheck>(`/api/builds/${id}/updates${force ? '?force=1' : ''}`),
+  lan: () => request<LanInfo>('/api/lan'),
   setProgress: (id: number, keys: string[], done: boolean) =>
     request<{ progress: Record<string, string> }>(`/api/builds/${id}/progress`, {
       method: 'PUT',

@@ -1,5 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import type { UpdateCheck } from '../../../shared/types.ts'
+import { api } from '../api.ts'
 import { GearView } from '../components/GearView.tsx'
+import { Journal } from '../components/Journal.tsx'
+import { UpdateBanner } from '../components/Updates.tsx'
 import { NextSteps } from '../components/NextSteps.tsx'
 import { ParagonView } from '../components/ParagonView.tsx'
 import { SkillsView } from '../components/SkillsView.tsx'
@@ -9,13 +13,14 @@ import { formatDate } from '../format.ts'
 import { allGearKeys, paragonKeys, pct, skillKeys, stat } from '../stats.ts'
 import { useBuild } from '../useBuild.ts'
 
-export type Tab = 'next' | 'gear' | 'skills' | 'paragon'
+export type Tab = 'next' | 'gear' | 'skills' | 'paragon' | 'journal'
 
 const TABS: { id: Tab; label: string }[] = [
   { id: 'next', label: 'Prochaines étapes' },
   { id: 'gear', label: 'Équipement' },
   { id: 'skills', label: 'Compétences' },
   { id: 'paragon', label: 'Parangon' },
+  { id: 'journal', label: 'Journal' },
 ]
 
 export function BuildPage({ id }: { id: number }) {
@@ -26,6 +31,14 @@ export function BuildPage({ id }: { id: number }) {
   const [tab, setTab] = useState<Tab>('next')
   const [paragonStep, setParagonStep] = useState<number | null>(null)
   const [refreshing, setRefreshing] = useState(false)
+  const [checking, setChecking] = useState(false)
+  const [update, setUpdate] = useState<UpdateCheck | null>(null)
+
+  // Vérification silencieuse à l'ouverture (le serveur met le résultat en cache 30 min).
+  useEffect(() => {
+    setUpdate(null)
+    api.checkUpdates(id).then(setUpdate, () => {})
+  }, [id])
 
   const variant = data ? (data.build.variants[data.activeVariant] ?? data.build.variants[0]) : null
 
@@ -51,15 +64,29 @@ export function BuildPage({ id }: { id: number }) {
 
   const { build } = data
 
-  async function onRefresh() {
+  async function onApplyUpdate() {
     setRefreshing(true)
     try {
       await state.refresh()
+      setUpdate(null)
       toast('Build mis à jour depuis Maxroll, ta progression est conservée.')
     } catch (err) {
       toast((err as Error).message, 'error')
     } finally {
       setRefreshing(false)
+    }
+  }
+
+  async function onCheck() {
+    setChecking(true)
+    try {
+      const result = await api.checkUpdates(id, true)
+      setUpdate(result)
+      if (result.status === 'up-to-date') toast('Le build est à jour avec Maxroll.')
+    } catch (err) {
+      toast(`Vérification impossible : ${(err as Error).message}`, 'error')
+    } finally {
+      setChecking(false)
     }
   }
 
@@ -97,11 +124,13 @@ export function BuildPage({ id }: { id: number }) {
         </div>
         <div className="build-actions">
           <a className="btn btn-ghost" href={build.sourceUrl} target="_blank" rel="noreferrer">Maxroll ↗</a>
-          <button className="btn btn-ghost" onClick={onRefresh} disabled={refreshing}>
-            {refreshing ? <span className="spinner" /> : '↻'} Mettre à jour
+          <button className="btn btn-ghost" onClick={onCheck} disabled={checking || refreshing}>
+            {checking ? <span className="spinner" /> : '↻'} Vérifier les mises à jour
           </button>
         </div>
       </header>
+
+      {update && <UpdateBanner check={update} onApply={onApplyUpdate} applying={refreshing} />}
 
       <nav className="variants" aria-label="Variantes du build">
         {build.variants.map((v) => (
@@ -155,6 +184,7 @@ export function BuildPage({ id }: { id: number }) {
         {tab === 'next' && <NextSteps build={build} variant={variant} state={state} goTo={goTo} />}
         {tab === 'gear' && <GearView variant={variant} state={state} />}
         {tab === 'skills' && <SkillsView variant={variant} state={state} />}
+        {tab === 'journal' && <Journal build={build} variantIndex={variant.index} state={state} />}
         {tab === 'paragon' && <ParagonView build={build} variant={variant} state={state} step={paragonStep} onStepChange={setParagonStep} />}
       </div>
     </div>

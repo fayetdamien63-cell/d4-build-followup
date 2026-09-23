@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "node --disable-warning=ExperimentalWarning --import tsx --watch src/index.ts",
     "start": "node --disable-warning=ExperimentalWarning --import tsx src/index.ts --serve-web",
+    "start:lan": "node --disable-warning=ExperimentalWarning --import tsx src/index.ts --serve-web --lan",
     "test": "vitest run",
     "typecheck": "tsc --noEmit"
   },

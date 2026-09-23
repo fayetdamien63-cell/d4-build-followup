@@ -75,6 +75,8 @@ export interface ParagonBoardStep {
   name: string
   /** Position dans l'ordre du plateau (0 = plateau de départ). */
   order: number
+  /** Plateau de départ : toujours débloqué, sa clé de plateau n'est pas à cocher. */
+  isStart: boolean
   rotation: number
   glyph: { key: string; id: string; name: string; level: number | null } | null
   gridId: string
@@ -144,4 +146,25 @@ export interface BuildWithProgress {
   activeVariant: number
   /** key -> date ISO de complétion */
   progress: Record<string, string>
+}
+
+export interface HistoryEvent {
+  id: number
+  at: string
+  done: boolean
+  keys: string[]
+}
+
+export interface UpdateCheck {
+  status: 'up-to-date' | 'update-available'
+  checkedAt: string
+  localDate: string | null
+  remoteDate: string | null
+  /** Présent si une mise à jour est disponible. */
+  diff?: import('./labels.ts').BuildDiff
+}
+
+export interface LanInfo {
+  enabled: boolean
+  urls: string[]
 }
