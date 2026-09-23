@@ -21,6 +21,7 @@
   --r-rare: #f0d95a;
   --r-legendary: #f08a24;
   --r-unique: #d6b77a;
+  --r-set: #4fd35d;
   --r-mythic: #b98cff;
 
   --radius: 10px;
@@ -947,6 +948,7 @@ button {
 }
 .rarity-legendary .todo-item-name { color: var(--r-legendary); }
 .rarity-unique .todo-item-name { color: var(--r-unique); }
+.rarity-set .todo-item-name { color: var(--r-set); }
 .rarity-mythic .todo-item-name { color: var(--r-mythic); }
 
 .all-done {
@@ -1108,6 +1110,7 @@ button {
   overflow: hidden;
 }
 .gear-card.rarity-unique { --rarity: var(--r-unique); }
+.gear-card.rarity-set { --rarity: var(--r-set); }
 .gear-card.rarity-mythic { --rarity: var(--r-mythic); }
 .gear-card.rarity-rare { --rarity: var(--r-rare); }
 .gear-card.rarity-magic { --rarity: var(--r-magic); }
@@ -1929,6 +1932,7 @@ button {
   font-weight: 600;
 }
 .rarity-unique .farm-target-name { color: var(--r-unique); }
+.rarity-set .farm-target-name { color: var(--r-set); }
 .rarity-mythic .farm-target-name { color: var(--r-mythic); }
 .rarity-legendary .farm-target-name { color: var(--r-legendary); }
 .rarity-rune .farm-target-name { color: var(--r-magic); }
@@ -2129,6 +2133,7 @@ button {
   color: var(--r-legendary);
 }
 .rarity-unique .priority-item { color: var(--r-unique); }
+.rarity-set .priority-item { color: var(--r-set); }
 .rarity-mythic .priority-item { color: var(--r-mythic); }
 .priority-affix {
   display: flex;

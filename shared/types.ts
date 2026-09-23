@@ -1,7 +1,7 @@
 // Modèle normalisé d'un build, indépendant de la source (Maxroll aujourd'hui).
 // Chaque élément cochable porte une `key` stable, utilisée pour stocker la progression.
 
-export type Rarity = 'normal' | 'magic' | 'rare' | 'legendary' | 'unique' | 'mythic'
+export type Rarity = 'normal' | 'magic' | 'rare' | 'legendary' | 'set' | 'unique' | 'mythic'
 
 export interface Build {
   id: number
